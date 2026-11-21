@@ -138,7 +138,9 @@ document.getElementById("go").onclick=async function(){
     await expect("تعديل الفروع",false,()=>db.doc(`tenants/${A}/hrSystem/data`).update({branches:[{id:"x"}]}));
     await expect("قراءة بيانات الشركة B",false,()=>db.doc(`tenants/${B}/hrSystem/data`).get({source:"server"}));
     await expect("كتابة بيانات الشركة B",false,()=>db.doc(`tenants/${B}/hrSystem/data`).set({employees:[]},{merge:true}));
-    await expect("تعديل قائمة الحسابات (ملاحظة: الدور الفعلي يأتي من فهرس الأدوار فلا أثر لهذا التعديل)",false,()=>db.doc(`tenants/${A}/hrSystem/users`).update({users:[{id:"u2",role:"admin"}]}),true);
+    await expect("حذف حساب من قائمة الحسابات (مسح حساب الأدمن)",false,()=>db.doc(`tenants/${A}/hrSystem/users`).update({users:[]}));
+    await expect("إضافة حساب جديد لقائمة الحسابات",false,()=>db.doc(`tenants/${A}/hrSystem/users`).update({users:[{id:"u1",username:"admin",role:"admin"},{id:"u9",username:"x",role:"admin"}]}));
+    await expect("تعديل سجل قائم بنفس العدد (إزالة علامة تغيير كلمة المرور)",true,()=>db.doc(`tenants/${A}/hrSystem/users`).update({users:[{id:"u1",username:"admin",role:"admin",authUid:uidA,mustChangePassword:false}]}));
 
     section("أدمن الشركة B");
     await auth.signInWithEmailAndPassword(email("admin",B),PW);
