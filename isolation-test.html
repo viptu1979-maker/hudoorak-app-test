@@ -131,9 +131,14 @@ document.getElementById("go").onclick=async function(){
     await expect("طلب موافقة باسم شخص آخر",false,()=>db.doc(`tenants/${A}/hrApprovals/r1`).set({requesterUid:uidA,status:"pending"}));
     await expect("طلب موافقة باسمه هو",true,()=>db.doc(`tenants/${A}/hrApprovals/r2`).set({requesterUid:uidE,status:"pending"}));
     await expect("اعتماد الطلب بنفسه",false,()=>db.doc(`tenants/${A}/hrApprovals/r2`).update({status:"approved"}));
+    await expect("تعديل طلبات الإجازة (من عمله)",true,()=>db.doc(`tenants/${A}/hrSystem/data`).update({leaveRequests:[{id:"l1",employeeId:"e1",status:"pending"}]}));
+    await expect("تعديل قائمة الموظفين",false,()=>db.doc(`tenants/${A}/hrSystem/data`).update({employees:emps(30)}));
+    await expect("تعديل الرواتب والخصومات",false,()=>db.doc(`tenants/${A}/hrSystem/data`).update({payrollItems:[{id:"p1",amount:99999}]}));
+    await expect("تعديل نسب التأمينات",false,()=>db.doc(`tenants/${A}/hrSystem/data`).update({gosiRates:{saudiEmployee:0,saudiEmployer:0,nonSaudiEmployer:0}}));
+    await expect("تعديل الفروع",false,()=>db.doc(`tenants/${A}/hrSystem/data`).update({branches:[{id:"x"}]}));
     await expect("قراءة بيانات الشركة B",false,()=>db.doc(`tenants/${B}/hrSystem/data`).get({source:"server"}));
     await expect("كتابة بيانات الشركة B",false,()=>db.doc(`tenants/${B}/hrSystem/data`).set({employees:[]},{merge:true}));
-    await expect("تعديل قائمة الحسابات في شركته (ترقية نفسه داخل التطبيق)",false,()=>db.doc(`tenants/${A}/hrSystem/users`).update({users:[{id:"u2",role:"admin"}]}),true);
+    await expect("تعديل قائمة الحسابات (ملاحظة: الدور الفعلي يأتي من فهرس الأدوار فلا أثر لهذا التعديل)",false,()=>db.doc(`tenants/${A}/hrSystem/users`).update({users:[{id:"u2",role:"admin"}]}),true);
 
     section("أدمن الشركة B");
     await auth.signInWithEmailAndPassword(email("admin",B),PW);
