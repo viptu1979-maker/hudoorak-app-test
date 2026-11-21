@@ -80,6 +80,11 @@ document.getElementById("go").onclick=async function(){
     await db.doc(`userRoles/${uidE}`).set({role:"employee",tenantId:A,accountId:"u2"});
     await db.doc(`tenants/${A}/userCredentials/u2`).set({password:"emp-pw"});
     addRow("أدمن A ينشئ موظفاً داخل شركته","مسموح",true,"");
+    await db.doc(`tenants/${A}/hrFinance/salaries`).set({map:{e1:4200}});
+    await db.doc(`tenants/${A}/hrFinance/payroll`).set({items:[{id:"p1",amount:50}]});
+    await db.doc(`tenants/${A}/hrOwnSalary/u2`).set({salary:4200});
+    await db.doc(`tenants/${A}/hrOwnSalary/u1`).set({salary:9000});
+    await db.doc(`tenants/${B}/hrFinance/salaries`).set({map:{e1:1}}).catch(()=>{});
 
     section("بدون تسجيل دخول");
     await auth.signOut();
@@ -92,6 +97,8 @@ document.getElementById("go").onclick=async function(){
     await expect("كتابة بيانات A",true,()=>db.doc(`tenants/${A}/hrSystem/data`).set({employees:emps(31)},{merge:true}));
     await expect("قراءة النسخ الاحتياطية في A",true,()=>db.doc(`tenants/${A}/hrSystemBackups/b1`).get());
     await expect("تعديل اسم الشركة",true,()=>db.doc(`tenants/${A}`).update({name:"اسم جديد"}));
+    await expect("قراءة مستند الرواتب في A",true,()=>db.doc(`tenants/${A}/hrFinance/salaries`).get({source:"server"}));
+    await expect("تعديل بنود الرواتب في A",true,()=>db.doc(`tenants/${A}/hrFinance/payroll`).set({items:[{id:"p1",amount:60}]}));
     section("أدمن الشركة A (محاولات الوصول لشركة B)");
     await expect("قراءة بيانات B",false,()=>db.doc(`tenants/${B}/hrSystem/data`).get({source:"server"}));
     await expect("كتابة بيانات B",false,()=>db.doc(`tenants/${B}/hrSystem/data`).set({employees:[]},{merge:true}));
@@ -99,6 +106,7 @@ document.getElementById("go").onclick=async function(){
     await expect("قراءة حسابات B",false,()=>db.doc(`tenants/${B}/hrSystem/users`).get({source:"server"}));
     await expect("قراءة كلمات مرور B",false,()=>db.doc(`tenants/${B}/userCredentials/u1`).get({source:"server"}));
     await expect("قراءة نسخ B الاحتياطية",false,()=>db.doc(`tenants/${B}/hrSystemBackups/b1`).get({source:"server"}));
+    await expect("قراءة رواتب B",false,()=>db.doc(`tenants/${B}/hrFinance/salaries`).get({source:"server"}));
     await expect("قراءة قائمة نسخ B (استعلام)",false,()=>db.collection(`tenants/${B}/hrSystemBackups`).get({source:"server"}));
     await expect("تغيير شركتي إلى B في فهرس الأدوار",false,()=>db.doc(`userRoles/${uidA}`).set({role:"admin",tenantId:B,accountId:"u1"}));
     await expect("نقل حساب مدير B إلى شركتي",false,()=>db.doc(`userRoles/${uidB}`).set({role:"admin",tenantId:A,accountId:"u1"}));
@@ -136,6 +144,12 @@ document.getElementById("go").onclick=async function(){
     await expect("تعديل الرواتب والخصومات",false,()=>db.doc(`tenants/${A}/hrSystem/data`).update({payrollItems:[{id:"p1",amount:99999}]}));
     await expect("تعديل نسب التأمينات",false,()=>db.doc(`tenants/${A}/hrSystem/data`).update({gosiRates:{saudiEmployee:0,saudiEmployer:0,nonSaudiEmployer:0}}));
     await expect("تعديل الفروع",false,()=>db.doc(`tenants/${A}/hrSystem/data`).update({branches:[{id:"x"}]}));
+    await expect("قراءة رواتب الموظفين (مستند الرواتب)",false,()=>db.doc(`tenants/${A}/hrFinance/salaries`).get({source:"server"}));
+    await expect("قراءة بنود الرواتب والخصومات",false,()=>db.doc(`tenants/${A}/hrFinance/payroll`).get({source:"server"}));
+    await expect("تعديل مستند الرواتب",false,()=>db.doc(`tenants/${A}/hrFinance/salaries`).set({map:{e1:99999}}));
+    await expect("قراءة راتبه هو",true,()=>db.doc(`tenants/${A}/hrOwnSalary/u2`).get({source:"server"}));
+    await expect("قراءة راتب المدير",false,()=>db.doc(`tenants/${A}/hrOwnSalary/u1`).get({source:"server"}));
+    await expect("رفع راتبه بنفسه",false,()=>db.doc(`tenants/${A}/hrOwnSalary/u2`).set({salary:99999}));
     await expect("قراءة بيانات الشركة B",false,()=>db.doc(`tenants/${B}/hrSystem/data`).get({source:"server"}));
     await expect("كتابة بيانات الشركة B",false,()=>db.doc(`tenants/${B}/hrSystem/data`).set({employees:[]},{merge:true}));
     await expect("حذف حساب من قائمة الحسابات (مسح حساب الأدمن)",false,()=>db.doc(`tenants/${A}/hrSystem/users`).update({users:[]}));
